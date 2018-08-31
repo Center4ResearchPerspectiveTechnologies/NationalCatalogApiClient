@@ -24,6 +24,8 @@ final class Entry
 {
     const IDENTIFIER_TYPE_GTIN = "gtin";
     const IDENTIFIER_TYPE_SKU = "sku";
+    const IDENTIFIER_TYPE_NTIN = "ntin";
+    const IDENTIFIER_TYPE_BARCODE = "barcode";
 
     const IDENTIFIER_LEVEL_TRADE_UNIT = "trade-unit";
     const IDENTIFIER_LEVEL_BOX = "box";
@@ -149,8 +151,13 @@ final class Entry
      * @param string $attrValueType
      * @param string $gtin
      */
-    public function updateAttr(int $attrValueId, int $attrId, $attrValue, string $attrValueType = null, string $gtin = null): void
-    {
+    public function updateAttr(
+        int $attrValueId,
+        int $attrId,
+        $attrValue,
+        string $attrValueType = null,
+        string $gtin = null
+    ): void {
         $attr = [
             'attr_value_id' => $attrValueId,
             'attr_id' => $attrId,
