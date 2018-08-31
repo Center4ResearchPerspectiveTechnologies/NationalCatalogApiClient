@@ -1,22 +1,22 @@
 <?php
 
 /************************************************************************
-*
-* Copyright 2018 Center for Research in Perspective Technologies, Inc.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-************************************************************************/
+ *
+ * Copyright 2018 Center for Research in Perspective Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ************************************************************************/
 
 namespace NationalCatalogApi;
 
@@ -31,18 +31,29 @@ final class Entry
     const IDENTIFIER_LEVEL_PALLET = "pallet";
     const IDENTIFIER_LEVEL_METRO_UNIT = "metro-unit";
     const IDENTIFIER_LEVEL_SHOW_PACK = "show-pack";
-    const IDENTIFIER_LEVEL_MULTI_PACK = "multi-pack";
+    const IDENTIFIER_LEVEL_INNER_PACK = "inner-pack";
 
     const PHOTO_TYPE_DEFAULT = "default";
     const PHOTO_TYPE_FACING = "facing";
-    const PHOTO_TYPE_LEFT = "left";
-    const PHOTO_TYPE_RIGHT = "right";
-    const PHOTO_TYPE_BACK = "back";
+    const PHOTO_TYPE_LOF = '7';
+    const PHOTO_TYPE_BACK = '13';
+    const PHOTO_TYPE_ROF = '19';
+    const PHOTO_TYPE_TOP = 'si1';
+    const PHOTO_TYPE_BOTTOM = 'si2';
+    const PHOTO_TYPE_IN_PACKAGING = 'si3';
+    const PHOTO_TYPE_OUT_OF_PACKAGING = 'si4';
+    const PHOTO_TYPE_INNER_PACK = 'si5';
+    const PHOTO_TYPE_TEXT = 'text';
     const PHOTO_TYPE_3DS = "3ds";
     const PHOTO_TYPE_MARKETING = "marketing";
     const PHOTO_TYPE_ECOMMERCE = "ecommerce";
     const PHOTO_TYPE_UNDEF = "undef";
     const PHOTO_TYPE_CUBI = "cubi";
+
+    const ENTRY_OBJECTS_KEY_ATTR = "good_attrs";
+    const ENTRY_OBJECTS_KEY_IMAGE = "good_images";
+    const ENTRY_OBJECTS_KEY_CATEGORY = "categories";
+    const ENTRY_OBJECTS_KEY_IDENTIFIER = "identified_by";
 
     /**
      * @var array
@@ -60,23 +71,21 @@ final class Entry
     /**
      * @param int $catId
      */
-    public function addCategory(int $catId) : void
+    public function addCategory(int $catId): void
     {
-        if (!isset($this->entry['categories'])) {
-            $this->entry['categories'] = [];
-        }
-        $this->entry['categories'][] = ['cat_id' => $catId];
+        $category = ['cat_id' => $catId];
+
+        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_CATEGORY, $category);
     }
 
     /**
      * @param int $catId
      */
-    public function deleteCategory(int $catId) : void
+    public function deleteCategory(int $catId): void
     {
-        if (!isset($this->entry['categories'])) {
-            $this->entry['categories'] = [];
-        }
-        $this->entry['categories'][] = ['cat_id' => $catId, 'delete' => 1];
+        $category = ['cat_id' => $catId, 'delete' => 1];
+
+        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_CATEGORY, $category);
     }
 
     /**
@@ -85,9 +94,16 @@ final class Entry
      * @param int $partyId
      * @param string $level
      * @param int $multiplier
+     * @param string $unit
      */
-    public function addIdentifiedBy(string $type, string $value, int $partyId = 0, string $level = self::IDENTIFIER_LEVEL_TRADE_UNIT, int $multiplier = 1) : void
-    {
+    public function addIdentifiedBy(
+        string $type,
+        string $value,
+        int $partyId = null,
+        string $level = self::IDENTIFIER_LEVEL_TRADE_UNIT,
+        int $multiplier = 1,
+        string $unit = null
+    ): void {
         $identifiedBy = [
             'type' => $type,
             'value' => $value,
@@ -97,19 +113,20 @@ final class Entry
         if ($partyId) {
             $identifiedBy['party_id'] = $partyId;
         }
-        if (!isset($this->entry['identified_by'])) {
-            $this->entry['identified_by'] = [];
+        if ($unit) {
+            $identifiedBy['unit'] = $unit;
         }
-        $this->entry['identified_by'][] = $identifiedBy;
+
+        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_IDENTIFIER, $identifiedBy);
     }
 
     /**
      * @param int $attrId
      * @param mixed $attrValue
      * @param string $attrValueType
-     * @param int $attrValueId
+     * @param string $gtin
      */
-    public function addAttr(int $attrId, $attrValue, string $attrValueType = null, int $attrValueId = null) : void
+    public function addAttr(int $attrId, $attrValue, string $attrValueType = null, string $gtin = null): void
     {
         $attr = [
             'attr_id' => $attrId,
@@ -118,21 +135,45 @@ final class Entry
         if ($attrValueType) {
             $attr['attr_value_type'] = $attrValueType;
         }
-        if ($attrValueId) {
-            $attr['attr_value_id'] = $attrValueId;
+        if ($gtin) {
+            $attr['gtin'] = $gtin;
         }
-        if (!isset($this->entry['good_attrs'])) {
-            $this->entry['good_attrs'] = [];
+
+        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_ATTR, $attr);
+    }
+
+    /**
+     * @param int $attrValueId
+     * @param int $attrId
+     * @param mixed $attrValue
+     * @param string $attrValueType
+     * @param string $gtin
+     */
+    public function updateAttr(int $attrValueId, int $attrId, $attrValue, string $attrValueType = null, string $gtin = null): void
+    {
+        $attr = [
+            'attr_value_id' => $attrValueId,
+            'attr_id' => $attrId,
+            'attr_value' => $attrValue
+        ];
+        if ($attrValueType) {
+            $attr['attr_value_type'] = $attrValueType;
         }
-        $this->entry['good_attrs'][] = $attr;
+
+        if ($gtin) {
+            $attr['gtin'] = $gtin;
+        }
+
+        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_ATTR, $attr);
     }
 
     /**
      * @param string $type
      * @param string|array $url
+     * @param string $gtin
      * @param int $locationId
      */
-    public function addImage(string $type, $url, int $locationId = null) : void
+    public function addImage(string $type, $url, string $gtin = null, int $locationId = null): void
     {
         $image = [
             'photo_type' => $type,
@@ -143,16 +184,17 @@ final class Entry
             $image['location_id'] = $locationId;
         }
 
-        if (!isset($this->entry['good_images'])) {
-            $this->entry['good_images'] = [];
+        if ($gtin) {
+            $image['gtin'] = $gtin;
         }
-        $this->entry['good_images'][] = $image;
+
+        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_IMAGE, $image);
     }
 
     /**
      * @param int $goodId
      */
-    public function setGoodId(int $goodId) : void
+    public function setGoodId(int $goodId): void
     {
         $this->entry['good_id'] = $goodId;
     }
@@ -160,7 +202,7 @@ final class Entry
     /**
      * @param string $goodName
      */
-    public function setGoodName(string $goodName) : void
+    public function setGoodName(string $goodName): void
     {
         $this->entry['good_name'] = $goodName;
     }
@@ -168,8 +210,20 @@ final class Entry
     /**
      * @return array
      */
-    public function toArray() : array
+    public function toArray(): array
     {
         return $this->entry;
+    }
+
+    /**
+     * @param string $key
+     * @param array $object
+     */
+    private function addObjectToEntry(string $key, array $object): void
+    {
+        if (!isset($this->entry[$key])) {
+            $this->entry[$key] = [];
+        }
+        $this->entry[$key][] = $object;
     }
 }

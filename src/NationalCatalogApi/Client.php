@@ -1,22 +1,22 @@
 <?php
 
 /************************************************************************
-*
-* Copyright 2018 Center for Research in Perspective Technologies, Inc.
-* 
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-************************************************************************/
+ *
+ * Copyright 2018 Center for Research in Perspective Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ************************************************************************/
 
 namespace NationalCatalogApi;
 
@@ -110,7 +110,7 @@ final class Client
     /**
      * @param string $url
      */
-    public function setUrl(string $url) : void
+    public function setUrl(string $url): void
     {
         $this->apiUrl = $url;
     }
@@ -119,7 +119,7 @@ final class Client
      * @param string $apiKey
      * @param string $supplierKey
      */
-    public function auth(string $apiKey, string $supplierKey = null) : void
+    public function auth(string $apiKey, string $supplierKey = null): void
     {
         $this->apiKey = $apiKey;
         $this->supplierKey = $supplierKey;
@@ -129,7 +129,7 @@ final class Client
      * @param string $format
      * @throws \Throwable
      */
-    public function setFormat($format) : void
+    public function setFormat($format): void
     {
         if (in_array($format, [self::RESPONSE_FORMAT_JSON, self::RESPONSE_FORMAT_XML])) {
             $this->format = $format;
@@ -141,7 +141,7 @@ final class Client
     /**
      * @return bool
      */
-    public function hasError() : bool
+    public function hasError(): bool
     {
         return null !== $this->_error;
     }
@@ -290,10 +290,12 @@ final class Client
             if ($response && isset($response['result'])) {
                 return $response['result'];
             }
-        } else if ($this->format == self::RESPONSE_FORMAT_XML) {
-            $response = \simplexml_load_string($result);
-            if ($response) {
-                return $response->xpath('result');
+        } else {
+            if ($this->format == self::RESPONSE_FORMAT_XML) {
+                $response = \simplexml_load_string($result);
+                if ($response) {
+                    return $response->xpath('result');
+                }
             }
         }
         $this->_error = null;
@@ -336,6 +338,9 @@ final class Client
                     $this->_error = 'Error (' . $this->getHttpCode() . ')';
                     break;
             }
+        }
+        if ($this->_error) {
+            throw new \Exception($this->_error, $this->getHttpCode());
         }
         return false;
     }
@@ -468,8 +473,14 @@ final class Client
      * @param float $reviewRating rating
      * @return bool|array
      */
-    public function addReplyToReview(int $reviewParentId, string $reviewText, string $socialType, string $socialId, string $reviewAuthor, float $reviewRating)
-    {
+    public function addReplyToReview(
+        int $reviewParentId,
+        string $reviewText,
+        string $socialType,
+        string $socialId,
+        string $reviewAuthor,
+        float $reviewRating
+    ) {
         $params = [
             'review_parent_id' => $reviewParentId,
             'review_text' => $reviewText,
@@ -492,8 +503,14 @@ final class Client
      * @param float $reviewRating rating
      * @return bool|array
      */
-    public function addReviewToParty(int $partyId, string $reviewText, string $socialType, string $socialId, string $reviewAuthor, float $reviewRating)
-    {
+    public function addReviewToParty(
+        int $partyId,
+        string $reviewText,
+        string $socialType,
+        string $socialId,
+        string $reviewAuthor,
+        float $reviewRating
+    ) {
         $params = [
             'party_id' => $partyId,
             'review_text' => $reviewText,
@@ -516,8 +533,14 @@ final class Client
      * @param float $reviewRating rating
      * @return bool|array
      */
-    public function addReviewToBrand(int $brandId, string $reviewText, string $socialType, string $socialId, string $reviewAuthor, float $reviewRating)
-    {
+    public function addReviewToBrand(
+        int $brandId,
+        string $reviewText,
+        string $socialType,
+        string $socialId,
+        string $reviewAuthor,
+        float $reviewRating
+    ) {
         $params = [
             'brand_id' => $brandId,
             'review_text' => $reviewText,
@@ -540,8 +563,14 @@ final class Client
      * @param float $reviewRating rating
      * @return bool|array
      */
-    public function addReviewToGood(int $goodId, string $reviewText, string $socialType, string $socialId, string $reviewAuthor, float $reviewRating)
-    {
+    public function addReviewToGood(
+        int $goodId,
+        string $reviewText,
+        string $socialType,
+        string $socialId,
+        string $reviewAuthor,
+        float $reviewRating
+    ) {
         $params = [
             'good_id' => $goodId,
             'review_text' => $reviewText,
