@@ -28,15 +28,15 @@ $entry->addIdentifiedBy(\NationalCatalogApi\Entry::IDENTIFIER_TYPE_SKU, "4602065
 $entry->addAttr(2123, "4602065373085");
 $entry->addAttr(1324, "4602065373000", 3);
 
-$entry->addImage(\NationalCatalogApi\Entry::PHOTO_TYPE_DEFAULT", "https://s1.1zoom.ru/prev2/534/Painting_Art_Big_cats_Tigers_Canine_tooth_fangs_533009_300x187.jpg", 2);
-$entry->addImage(\NationalCatalogApi\Entry::PHOTO_TYPE_DEFAULT", [
-          "https://s1.1zoom.ru/prev2/534/Painting_Art_Big_cats_Tigers_Canine_tooth_fangs_533009_300x187.jpg",
-          "https://s1.1zoom.ru/prev2/534/Painting_Art_Big_cats_Tigers_Canine_tooth_fangs_533009_300x187.jpg"
+$entry->addImage(\NationalCatalogApi\Entry::PHOTO_TYPE_DEFAULT, "https://public_domain/your_picture1.jpg", 2);
+$entry->addImage(\NationalCatalogApi\Entry::PHOTO_TYPE_DEFAULT, [
+          "https://public_domain/your_picture2.jpg",
+          "https://public_domain/your_picture3.jpg"
         ]);
 
 $feed->addEntry($entry); //add created entry to feed
 
-print_r($feed->asJson());
+print_r($feed->asJson()); // if you want to check the feed
 
 $result = $api->postFeed($feed);// we can pass $feed or $feed->asJson()
 ```
@@ -86,14 +86,14 @@ $result = $api->postFeed($feed);// we can pass $feed or $feed->asJson()
         "good_images": [
             {
                 "photo_type": "default",
-                "photo_url": "https:\/\/s1.1zoom.ru\/prev2\/534\/Painting_Art_Big_cats_Tigers_Canine_tooth_fangs_533009_300x187.jpg",
+                "photo_url": "https://public_domain/your_picture1.jpg",
                 "location_id": 2
             },
             {
                 "photo_type": "3ds",
                 "photo_url": [
-                    "https:\/\/s1.1zoom.ru\/prev2\/534\/Painting_Art_Big_cats_Tigers_Canine_tooth_fangs_533009_300x187.jpg",
-                    "https:\/\/s1.1zoom.ru\/prev2\/534\/Painting_Art_Big_cats_Tigers_Canine_tooth_fangs_533009_300x187.jpg"
+                    "https://public_domain/your_picture2.jpg",
+                    "https://public_domain/your_picture3.jpg"
                 ]
             }
         ]
