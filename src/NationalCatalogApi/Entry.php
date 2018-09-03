@@ -35,6 +35,9 @@ final class Entry
     const IDENTIFIER_LEVEL_SHOW_PACK = "show-pack";
     const IDENTIFIER_LEVEL_INNER_PACK = "inner-pack";
 
+    const IDENTIFIER_UNIT_TYPE_ONE = 'шт';
+    const IDENTIFIER_UNIT_TYPE_WEIGHT = 'кг';
+
     const PHOTO_TYPE_DEFAULT = "default";
     const PHOTO_TYPE_FACING = "facing";
     const PHOTO_TYPE_LOF = '7';
@@ -93,10 +96,10 @@ final class Entry
     /**
      * @param string $type
      * @param string $value
-     * @param int $partyId
+     * @param int|null $partyId
      * @param string $level
      * @param int $multiplier
-     * @param string $unit
+     * @param string|null $unit
      */
     public function addIdentifiedBy(
         string $type,
@@ -148,8 +151,8 @@ final class Entry
      * @param int $attrValueId
      * @param int $attrId
      * @param mixed $attrValue
-     * @param string $attrValueType
-     * @param string $gtin
+     * @param string|null $attrValueType
+     * @param string|null $gtin
      */
     public function updateAttr(
         int $attrValueId,
@@ -177,11 +180,19 @@ final class Entry
     /**
      * @param string $type
      * @param string|array $url
-     * @param string $gtin
-     * @param int $locationId
+     * @param int|null $locationId
+     * @param string|null $identifier
+     * @param string|null $identifierType
+     * @param int|null $identifierPartyId
      */
-    public function addImage(string $type, $url, string $gtin = null, int $locationId = null): void
-    {
+    public function addImage(
+        string $type,
+        $url,
+        int $locationId = null,
+        string $identifier = null,
+        string $identifierType = null,
+        int $identifierPartyId = null
+    ): void {
         $image = [
             'photo_type' => $type,
             'photo_url' => $url
@@ -191,8 +202,12 @@ final class Entry
             $image['location_id'] = $locationId;
         }
 
-        if ($gtin) {
-            $image['gtin'] = $gtin;
+        if ($identifier) {
+            $image['identifier'] = $identifier;
+            $image['identifier_type'] = $identifierType;
+            if ($identifierPartyId) {
+                $image['identifier_party_id'] = $identifierPartyId;
+            }
         }
 
         $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_IMAGE, $image);

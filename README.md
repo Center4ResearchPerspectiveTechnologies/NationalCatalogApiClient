@@ -3,7 +3,21 @@ Client for National Catalog Api v3
 
 ## Installation
 
-composer require Center4ResearchPerspectiveTechnologies/NationalCatalogApiClient master@dev
+Add these lines to your composer.json
+
+```
+"repositories": [
+      {
+        "type": "github",
+        "url":  "https://github.com/Center4ResearchPerspectiveTechnologies/NationalCatalogApiClient.git"
+      }
+    ]
+   
+``` 
+
+and run command in your project 
+
+`composer require Center4ResearchPerspectiveTechnologies/NationalCatalogApiClient master@dev`
 
 ## Example of usage
 
