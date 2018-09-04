@@ -1,13 +1,14 @@
 {
-    "name": "tanyalei/nackat_client",
-    "license": "Apache-2.0",
-    "require": {
-        "ext-json": "*",
-        "ext-curl": "*"
-    },
-    "autoload": {
-        "psr-0": {
-            "NationalCatalogApi": "src"
-        }
+  "name": "Center4ResearchPerspectiveTechnologies/NationalCatalogApiClient",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "require": {
+    "ext-json": "*",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-0": {
+      "NationalCatalogApi": "src"
     }
+  }
 }
