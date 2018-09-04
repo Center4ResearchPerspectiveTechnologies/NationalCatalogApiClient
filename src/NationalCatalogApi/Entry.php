@@ -24,7 +24,7 @@ final class Entry
 {
     const IDENTIFIER_TYPE_GTIN = "gtin";
     const IDENTIFIER_TYPE_SKU = "sku";
-    const IDENTIFIER_TYPE_NTIN = "ntin";
+    const IDENTIFIER_TYPE_LTIN = "ltin";
     const IDENTIFIER_TYPE_BARCODE = "barcode";
 
     const IDENTIFIER_LEVEL_TRADE_UNIT = "trade-unit";
