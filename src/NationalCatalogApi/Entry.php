@@ -149,27 +149,38 @@ final class Entry
 
     /**
      * @param int $attrValueId
-     * @param int $attrId
-     * @param mixed $attrValue
+     */
+    public function deleteAttr(int $attrValueId): void
+    {
+        $attr = [
+            'attr_value_id' => $attrValueId,
+            'delete' => 1
+        ];
+
+        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_ATTR, $attr);
+    }
+
+    /**
+     * @param int $attrValueId
+     * @param string|int|null $attrValue
      * @param string|null $attrValueType
      * @param string|null $gtin
      */
     public function updateAttr(
         int $attrValueId,
-        int $attrId,
-        $attrValue,
+        $attrValue = null,
         string $attrValueType = null,
         string $gtin = null
     ): void {
         $attr = [
             'attr_value_id' => $attrValueId,
-            'attr_id' => $attrId,
-            'attr_value' => $attrValue
         ];
+        if ($attrValue) {
+            $attr['attr_value'] = $attrValue;
+        }
         if ($attrValueType) {
             $attr['attr_value_type'] = $attrValueType;
         }
-
         if ($gtin) {
             $attr['gtin'] = $gtin;
         }
