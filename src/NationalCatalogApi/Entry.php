@@ -104,10 +104,10 @@ final class Entry
     public function addIdentifiedBy(
         string $type,
         string $value,
-        int $partyId = null,
+        ?int $partyId = null,
         string $level = self::IDENTIFIER_LEVEL_TRADE_UNIT,
         int $multiplier = 1,
-        string $unit = null
+        ?string $unit = null
     ): void {
         $identifiedBy = [
             'type' => $type,
@@ -128,10 +128,10 @@ final class Entry
     /**
      * @param int $attrId
      * @param mixed $attrValue
-     * @param string $attrValueType
-     * @param string $gtin
+     * @param null|string $attrValueType
+     * @param null|string $gtin
      */
-    public function addAttr(int $attrId, $attrValue, string $attrValueType = null, string $gtin = null): void
+    public function addAttr(int $attrId, $attrValue, ?string $attrValueType = null, ?string $gtin = null): void
     {
         $attr = [
             'attr_id' => $attrId,
@@ -169,8 +169,8 @@ final class Entry
     public function updateAttr(
         int $attrValueId,
         $attrValue = null,
-        string $attrValueType = null,
-        string $gtin = null
+        ?string $attrValueType = null,
+        ?string $gtin = null
     ): void {
         $attr = [
             'attr_value_id' => $attrValueId,
@@ -199,10 +199,10 @@ final class Entry
     public function addImage(
         string $type,
         $url,
-        int $locationId = null,
-        string $identifier = null,
-        string $identifierType = null,
-        int $identifierPartyId = null
+        ?int $locationId = null,
+        ?string $identifier = null,
+        ?string $identifierType = null,
+        ?int $identifierPartyId = null
     ): void {
         $image = [
             'photo_type' => $type,
