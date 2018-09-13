@@ -24,8 +24,15 @@ final class Entry
 {
     const IDENTIFIER_TYPE_GTIN = "gtin";
     const IDENTIFIER_TYPE_SKU = "sku";
-    const IDENTIFIER_TYPE_LTIN = "ltin";
+    const IDENTIFIER_TYPE_NTIN = "ntin";
     const IDENTIFIER_TYPE_BARCODE = "barcode";
+    const IDENTIFIER_TYPE_LTIN = "ltin";
+
+    const IDENTIFIER_NTIN = 0; 	// ШК НТИН
+    const IDENTIFIER_GTIN = 1; 	// global bar-code
+    const IDENTIFIER_LTIN = 2;	// local bar-code
+    const IDENTIFIER_SKU = 3;	// article
+    const IDENTIFIER_BARCODE = 4;	// barcode
 
     const IDENTIFIER_LEVEL_TRADE_UNIT = "trade-unit";
     const IDENTIFIER_LEVEL_BOX = "box";
@@ -104,10 +111,10 @@ final class Entry
     public function addIdentifiedBy(
         string $type,
         string $value,
-        ?int $partyId = null,
+        int $partyId = null,
         string $level = self::IDENTIFIER_LEVEL_TRADE_UNIT,
         int $multiplier = 1,
-        ?string $unit = null
+        string $unit = null
     ): void {
         $identifiedBy = [
             'type' => $type,
@@ -128,10 +135,10 @@ final class Entry
     /**
      * @param int $attrId
      * @param mixed $attrValue
-     * @param null|string $attrValueType
-     * @param null|string $gtin
+     * @param string $attrValueType
+     * @param string $gtin
      */
-    public function addAttr(int $attrId, $attrValue, ?string $attrValueType = null, ?string $gtin = null): void
+    public function addAttr(int $attrId, $attrValue, string $attrValueType = null, string $gtin = null): void
     {
         $attr = [
             'attr_id' => $attrId,
@@ -149,38 +156,27 @@ final class Entry
 
     /**
      * @param int $attrValueId
-     */
-    public function deleteAttr(int $attrValueId): void
-    {
-        $attr = [
-            'attr_value_id' => $attrValueId,
-            'delete' => 1
-        ];
-
-        $this->addObjectToEntry(self::ENTRY_OBJECTS_KEY_ATTR, $attr);
-    }
-
-    /**
-     * @param int $attrValueId
-     * @param string|int|null $attrValue
+     * @param int $attrId
+     * @param mixed $attrValue
      * @param string|null $attrValueType
      * @param string|null $gtin
      */
     public function updateAttr(
         int $attrValueId,
-        $attrValue = null,
-        ?string $attrValueType = null,
-        ?string $gtin = null
+        int $attrId,
+        $attrValue,
+        string $attrValueType = null,
+        string $gtin = null
     ): void {
         $attr = [
             'attr_value_id' => $attrValueId,
+            'attr_id' => $attrId,
+            'attr_value' => $attrValue
         ];
-        if ($attrValue) {
-            $attr['attr_value'] = $attrValue;
-        }
         if ($attrValueType) {
             $attr['attr_value_type'] = $attrValueType;
         }
+
         if ($gtin) {
             $attr['gtin'] = $gtin;
         }
@@ -199,10 +195,10 @@ final class Entry
     public function addImage(
         string $type,
         $url,
-        ?int $locationId = null,
-        ?string $identifier = null,
-        ?string $identifierType = null,
-        ?int $identifierPartyId = null
+        int $locationId = null,
+        string $identifier = null,
+        string $identifierType = null,
+        int $identifierPartyId = null
     ): void {
         $image = [
             'photo_type' => $type,
@@ -258,5 +254,24 @@ final class Entry
             $this->entry[$key] = [];
         }
         $this->entry[$key][] = $object;
+    }
+
+
+    /**
+     * Get abbreviation type, used in API
+     * @param int $type
+     * @return string
+     */
+    public static function identifierTypeConvert(int $type): string
+    {
+        switch ($type)
+        {
+            case self::IDENTIFIER_SKU: return self::IDENTIFIER_TYPE_SKU;
+            case self::IDENTIFIER_LTIN: return self::IDENTIFIER_TYPE_LTIN;
+            case self::IDENTIFIER_BARCODE: return self::IDENTIFIER_TYPE_BARCODE;
+            case self::IDENTIFIER_NTIN: return self::IDENTIFIER_TYPE_NTIN;
+            case self::IDENTIFIER_GTIN:
+            default: return self::IDENTIFIER_TYPE_GTIN;
+        }
     }
 }

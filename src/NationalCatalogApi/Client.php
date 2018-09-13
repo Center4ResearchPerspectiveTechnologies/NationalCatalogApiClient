@@ -20,6 +20,8 @@
 
 namespace NationalCatalogApi;
 
+use NationalCatalogApi\Responses\{ApiResponse};
+
 /**
  * Class Client
  *
@@ -85,7 +87,7 @@ final class Client
      * @param string $apiKey
      * @param string $supplierKey
      */
-    public function __construct(string $apiKey, ?string $supplierKey = null)
+    public function __construct($apiKey, $supplierKey = null)
     {
         $this->apiUrl = self::API_URL;
         $this->auth($apiKey, $supplierKey);
@@ -117,9 +119,9 @@ final class Client
 
     /**
      * @param string $apiKey
-     * @param string|null $supplierKey
+     * @param string $supplierKey
      */
-    public function auth(string $apiKey, ?string $supplierKey = null): void
+    public function auth(string $apiKey, string $supplierKey = null): void
     {
         $this->apiKey = $apiKey;
         $this->supplierKey = $supplierKey;
@@ -249,6 +251,7 @@ final class Client
                 return $result;
             }, []);
         }
+
         $this->_headers['ResponseCode'] = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
         return $response;
@@ -262,7 +265,7 @@ final class Client
      * @param string $ETag ETag
      * @return bool|string Return the result on success, FALSE on failure
      */
-    public function getPureResponse($requestEntity, array $params = [], ?string $ETag = null)
+    public function getPureResponse($requestEntity, array $params = [], $ETag = null)
     {
         $params['format'] = $this->format;
         $params['apikey'] = $this->apiKey;
@@ -281,83 +284,85 @@ final class Client
      * Parse response
      *
      * @param mixed $result
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string $responseObj
+     * @return bool|array
+     * @throws \Exception
      */
-    public function parseResponse($result)
+    public function parseResponse($result, $responseObj)
     {
         if ($this->format == self::RESPONSE_FORMAT_JSON) {
             $response = false !== $result ? json_decode($result, true) : false;
             if ($response && isset($response['result'])) {
-                return $response['result'];
+                return $this->prepareResponseObj($response, $responseObj);
             }
         } else {
             if ($this->format == self::RESPONSE_FORMAT_XML) {
                 $response = \simplexml_load_string($result);
                 if ($response) {
-                    return $response->xpath('result');
+                    return $this->prepareResponseObj($response, $responseObj);
                 }
             }
         }
         $this->_error = null;
-
-        switch ($this->getHttpCode()) {
-            case self::CODE_STATUS_OK:
-                break;
-            case self::CODE_STATUS_REQUEST_ERROR:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): request error';
-                break;
-            case self::CODE_STATUS_NOT_MODIFIED:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): not modified';
-                break;
-            case self::CODE_STATUS_NOT_AUTHORIZED:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): not authorized';
-                break;
-            case self::CODE_STATUS_NO_ACCESS:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): no access';
-                break;
-            case self::CODE_STATUS_NO_DATA_FOUND:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): data not found';
-                break;
-            case self::CODE_STATUS_REQUEST_ENTITY_TO_LARGE:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): request entity to large';
-                break;
-            case self::CODE_STATUS_REQUEST_LIMIT_REACHED:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): request limit reached';
-                break;
-            case self::CODE_STATUS_INTERNAL_SERVER_ERROR:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): internal server error';
-                break;
-            case self::CODE_STATUS_METHOD_NOT_FOUND:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): method not found';
-                break;
-            case self::CODE_STATUS_SERVICE_NOT_AVAILABLE:
-                $this->_error = 'Error (' . $this->getHttpCode() . '): service not available';
-                break;
-            default:
-                $this->_error = 'Error (' . $this->getHttpCode() . ')';
-                break;
+        if (true) {
+            switch ($this->getHttpCode()) {
+                case self::CODE_STATUS_OK:
+                    break;
+                case self::CODE_STATUS_REQUEST_ERROR:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): request error';
+                    break;
+                case self::CODE_STATUS_NOT_MODIFIED:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): not modified';
+                    break;
+                case self::CODE_STATUS_NOT_AUTHORIZED:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): not authorized';
+                    break;
+                case self::CODE_STATUS_NO_ACCESS:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): no access';
+                    break;
+                case self::CODE_STATUS_NO_DATA_FOUND:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): data not found';
+                    $this->prepareResponseObj([], $responseObj);
+                    break;
+                case self::CODE_STATUS_REQUEST_ENTITY_TO_LARGE:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): request entity to large';
+                    break;
+                case self::CODE_STATUS_REQUEST_LIMIT_REACHED:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): request limit reached';
+                    break;
+                case self::CODE_STATUS_INTERNAL_SERVER_ERROR:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): internal server error';
+                    break;
+                case self::CODE_STATUS_METHOD_NOT_FOUND:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): method not found';
+                    break;
+                case self::CODE_STATUS_SERVICE_NOT_AVAILABLE:
+                    $this->_error = 'Error (' . $this->getHttpCode() . '): service not available';
+                    break;
+                default:
+                    $this->_error = 'Error (' . $this->getHttpCode() . ')';
+                    break;
+            }
         }
-
         if ($this->_error) {
             throw new \Exception($this->_error, $this->getHttpCode());
         }
         return false;
     }
 
-    /**
-     * Get response
+    /*** Get response
      *
      * @param string $requestEntity
+     * @param string $responseObj
      * @param array $params
-     * @param string $ETag ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string|null $ETag
+     * @return array|bool
+     * @throws \Exception
      */
-    public function request(string $requestEntity, array $params = [], ?string $ETag = null)
+    public function request(string $requestEntity, string $responseObj, array $params = [], string $ETag = null)
     {
         $result = $this->getPureResponse($requestEntity, $params, $ETag);
-        return $this->parseResponse($result);
+        return $this->parseResponse($result, $responseObj);
     }
 
     /**
@@ -383,23 +388,23 @@ final class Client
      * Return list of brands
      *
      * @param string $ETag ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getBrands(?string $ETag = null)
+    public function getBrands(string $ETag = null)
     {
-        return $this->request(self::REQUEST_ENTITY_BRANDS, [], $ETag);
+        return $this->request(self::REQUEST_ENTITY_BRANDS, ApiResponse::RESPONSE_BRANDS, [], $ETag);
     }
 
     /**
      * Return list of brands
      *
-     * @param int|null $partyId
-     * @param null|string $ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param int $partyId
+     * @param string $ETag ETag
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getLocations(?int $partyId = null, ?string $ETag = null)
+    public function getLocations(int $partyId = null, string $ETag = null)
     {
         $params = [];
         if (isset($partyId)) {
@@ -407,57 +412,57 @@ final class Client
                 'party_id' => $partyId
             ];
         }
-        return $this->request(self::REQUEST_ENTITY_LOCATIONS, $params, $ETag);
+        return $this->request(self::REQUEST_ENTITY_LOCATIONS, ApiResponse::RESPONSE_LOCATIONS, $params, $ETag);
     }
 
     /**
      * Return list of categories
      *
-     * @param null|string $ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string $ETag ETag
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getCategories(?string $ETag = null)
+    public function getCategories(string $ETag = null)
     {
-        return $this->request(self::REQUEST_ENTITY_CATEGORIES, [], $ETag);
+        return $this->request(self::REQUEST_ENTITY_CATEGORIES, ApiResponse::RESPONSE_CATEGORIES, [], $ETag);
     }
 
     /**
      * Return party list by role
      *
-     * @param null|string $role
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string $role
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getParties(?string $role = null)
+    public function getParties(string $role = null)
     {
-        return $this->request(self::REQUEST_ENTITY_PARTIES, ['role' => $role]);
+        return $this->request(self::REQUEST_ENTITY_PARTIES, ApiResponse::RESPONSE_PARTIES, ['role' => $role]);
     }
 
     /**
      * Return list of products
      *
      * @param string $query
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function getSuggestions(string $query)
     {
         $params = [
             'q' => $query
         ];
-        return $this->request(self::REQUEST_ENTITY_SUGGESTIONS, $params);
+        return $this->request(self::REQUEST_ENTITY_SUGGESTIONS, ApiResponse::RESPONSE_SUGGESTIONS, $params);
     }
 
     /**
      * Return list of attributes
      *
-     * @param null|int $catId category id
-     * @param null|string $attrType attribute type (const)
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param int $catId category id
+     * @param int $attrType attribute type (const)
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getAttributes(?int $catId = null, ?string $attrType = null)
+    public function getAttributes(int $catId = null, $attrType = null)
     {
         $params = [];
         if (isset($catId)) {
@@ -466,7 +471,7 @@ final class Client
         if (isset($attrType)) {
             $params['attr_type'] = $attrType;
         }
-        return $this->request(self::REQUEST_ENTITY_ATTRIBUTES, $params);
+        return $this->request(self::REQUEST_ENTITY_ATTRIBUTES, ApiResponse::RESPONSE_ATTRIBUTE, $params);
     }
 
     /**
@@ -478,8 +483,8 @@ final class Client
      * @param string $socialId social network id
      * @param string $reviewAuthor author name
      * @param float $reviewRating rating
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function addReplyToReview(
         int $reviewParentId,
@@ -488,7 +493,8 @@ final class Client
         string $socialId,
         string $reviewAuthor,
         float $reviewRating
-    ) {
+    )
+    {
         $params = [
             'review_parent_id' => $reviewParentId,
             'review_text' => $reviewText,
@@ -497,7 +503,7 @@ final class Client
             'review_author' => $reviewAuthor,
             'review_rating' => $reviewRating
         ];
-        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, $params);
+        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, ApiResponse::RESPONSE_ADD_REVIEW, $params);
     }
 
     /**
@@ -509,8 +515,8 @@ final class Client
      * @param string $socialId social network id
      * @param string $reviewAuthor author name
      * @param float $reviewRating rating
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function addReviewToParty(
         int $partyId,
@@ -519,7 +525,8 @@ final class Client
         string $socialId,
         string $reviewAuthor,
         float $reviewRating
-    ) {
+    )
+    {
         $params = [
             'party_id' => $partyId,
             'review_text' => $reviewText,
@@ -528,7 +535,7 @@ final class Client
             'review_author' => $reviewAuthor,
             'review_rating' => $reviewRating
         ];
-        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, $params);
+        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, ApiResponse::RESPONSE_ADD_REVIEW, $params);
     }
 
     /**
@@ -540,8 +547,8 @@ final class Client
      * @param string $socialId social network id
      * @param string $reviewAuthor author name
      * @param float $reviewRating rating
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function addReviewToBrand(
         int $brandId,
@@ -550,7 +557,8 @@ final class Client
         string $socialId,
         string $reviewAuthor,
         float $reviewRating
-    ) {
+    )
+    {
         $params = [
             'brand_id' => $brandId,
             'review_text' => $reviewText,
@@ -559,7 +567,7 @@ final class Client
             'review_author' => $reviewAuthor,
             'review_rating' => $reviewRating
         ];
-        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, $params);
+        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, ApiResponse::RESPONSE_ADD_REVIEW, $params);
     }
 
     /**
@@ -571,8 +579,8 @@ final class Client
      * @param string $socialId social network id
      * @param string $reviewAuthor author name
      * @param float $reviewRating rating
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function addReviewToGood(
         int $goodId,
@@ -581,7 +589,8 @@ final class Client
         string $socialId,
         string $reviewAuthor,
         float $reviewRating
-    ) {
+    )
+    {
         $params = [
             'good_id' => $goodId,
             'review_text' => $reviewText,
@@ -590,39 +599,39 @@ final class Client
             'review_author' => $reviewAuthor,
             'review_rating' => $reviewRating
         ];
-        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, $params);
+        return $this->request(self::REQUEST_ENTITY_ADD_REVIEW, ApiResponse::RESPONSE_ADD_REVIEW, $params);
     }
 
     /**
      * Return information about product by id
      *
      * @param int $goodId
-     * @param string|null $ETag ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string $ETag ETag
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getProductById(int $goodId, ?string $ETag = null)
+    public function getProductById(int $goodId, string $ETag = null)
     {
         $params = [
             'good_id' => $goodId
         ];
-        return $this->request(self::REQUEST_ENTITY_PRODUCTS, $params, $ETag);
+        return $this->request(self::REQUEST_ENTITY_PRODUCTS, ApiResponse::RESPONSE_PRODUCTS, $params, $ETag);
     }
 
     /**
      * Return information about products by GTIN
      *
      * @param string $gtin
-     *  @param string|null $ETag ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string $ETag ETag
+     * @return bool|array
+     * @throws \Exception
      */
     public function getProductsByGtin(string $gtin, string $ETag = null)
     {
         $params = [
             'gtin' => $gtin
         ];
-        return $this->request(self::REQUEST_ENTITY_PRODUCTS, $params, $ETag);
+        return $this->request(self::REQUEST_ENTITY_PRODUCTS, ApiResponse::RESPONSE_PRODUCTS, $params, $ETag);
     }
 
     /**
@@ -630,17 +639,17 @@ final class Client
      *
      * @param string $ltin
      * @param int $partyId
-     *  @param string|null $ETag ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string $ETag ETag
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getProductsByLtin(string $ltin, int $partyId, ?string $ETag = null)
+    public function getProductsByLtin(string $ltin, int $partyId, string $ETag = null)
     {
         $params = [
             'ltin' => $ltin,
             'party_id' => $partyId
         ];
-        return $this->request(self::REQUEST_ENTITY_PRODUCTS, $params, $ETag);
+        return $this->request(self::REQUEST_ENTITY_PRODUCTS, ApiResponse::RESPONSE_PRODUCTS, $params, $ETag);
     }
 
     /**
@@ -648,62 +657,61 @@ final class Client
      *
      * @param string $sku
      * @param int $partyId
-     *  @param string|null $ETag ETag
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @param string $ETag ETag
+     * @return bool|array
+     * @throws \Exception
      */
-    public function getProductsBySku(string $sku, int $partyId, ?string $ETag = null)
+    public function getProductsBySku(string $sku, int $partyId, string $ETag = null)
     {
         $params = [
             'sku' => $sku,
             'party_id' => $partyId
         ];
-        return $this->request(self::REQUEST_ENTITY_PRODUCTS, $params, $ETag);
+        return $this->request(self::REQUEST_ENTITY_PRODUCTS, ApiResponse::RESPONSE_PRODUCTS, $params, $ETag);
     }
 
     /**
      * Return array [ GoodId, ETag, Attributes ] for party
      *
      * @param int $partyId
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function getETagsList(int $partyId)
     {
         $params = [
             'party_id' => $partyId
         ];
-        return $this->request(self::REQUEST_ENTITY_ETAGS_LIST, $params);
+        return $this->request(self::REQUEST_ENTITY_ETAGS_LIST, ApiResponse::RESPONSE_ETAGS_LIST, $params);
     }
 
     /**
      * Get status of created feed
      *
      * @param int $feedId feed id
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function getFeedStatus(int $feedId)
     {
         $params = [
             'feed_id' => $feedId
         ];
-        return $this->request(self::REQUEST_ENTITY_FEED_STATUS, $params);
+        return $this->request(self::REQUEST_ENTITY_FEED_STATUS, ApiResponse::RESPONSE_FEED_STATUS, $params);
     }
 
     /**
      * Post feed
      *
      * @param mixed $content
-     * @throws \Throwable
-     * @return bool|array|\SimpleXMLElement
+     * @return bool|array
+     * @throws \Exception
      */
     public function postFeed($content)
     {
         $params['apikey'] = $this->apiKey;
         $params['supplier_key'] = $this->supplierKey;
         $params['format'] = $this->format;
-
         $url = $this->getUrl(self::REQUEST_ENTITY_FEED) . '?' . http_build_query($params);
         $body = ($content instanceof Feed) ? $content->asJson() : $content;
 
@@ -715,6 +723,26 @@ final class Client
         $headers = [$contentTypeHeader];
 
         $result = $this->sendRequest($url, $body, $headers);
-        return $this->parseResponse($result);
+        return $this->parseResponse($result, ApiResponse::RESPONSE_FEED);
+    }
+
+    /**
+     * * Method for prepare response object
+     * @param $response - recieved response
+     * @param string $requestedApi - class name with namespace
+     * @return mixed
+     */
+    private function prepareResponseObj($response, $requestedApi)
+    {
+        if ($this->format == self::RESPONSE_FORMAT_XML) {
+            $response = json_decode(json_encode((array)$response), true);
+        }
+        /**
+         * @var ApiResponse $responseObj
+         */
+        $responseObj = new $requestedApi($response['result']);
+        $responseObj->setApiVersion($response['apiversion']);
+        $responseObj->setResult($response['result']);
+        return $responseObj;
     }
 }

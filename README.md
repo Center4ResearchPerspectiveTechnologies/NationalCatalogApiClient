@@ -119,8 +119,15 @@ $result = $api->postFeed($feed);// we can pass $feed or $feed->asJson()
 ## Result
 
 ```
-Array
-(
-    [feed_id] => 131
-)
+object(NationalCatalogApi\Responses\FeedResponse)#135 (3) {
+  ["feed_id":"NationalCatalogApi\Responses\FeedResponse":private]=>
+  int(171)
+  ["result":"NationalCatalogApi\Responses\ApiResponse":private]=>
+  array(1) {
+    ["feed_id"]=>
+    string(3) "171"
+  }
+  ["apiVersion":"NationalCatalogApi\Responses\ApiResponse":private]=>
+  int(3)
+}
 ```
