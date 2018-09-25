@@ -745,7 +745,7 @@ final class Client
 
         $result = $response['result'];
 
-/*        if ($this->format == self::RESPONSE_FORMAT_XML) {
+        /*if ($this->format == self::RESPONSE_FORMAT_XML) {
             $result = $originalResponse->xpath('result');
         }
         */
