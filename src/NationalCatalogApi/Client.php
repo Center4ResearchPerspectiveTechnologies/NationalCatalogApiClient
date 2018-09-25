@@ -85,9 +85,9 @@ final class Client
 
     /**
      * @param string $apiKey
-     * @param string $supplierKey
+     * @param string|null $supplierKey
      */
-    public function __construct($apiKey, $supplierKey = null)
+    public function __construct(string $apiKey, ?string $supplierKey = null)
     {
         $this->apiUrl = self::API_URL;
         $this->auth($apiKey, $supplierKey);
@@ -119,9 +119,9 @@ final class Client
 
     /**
      * @param string $apiKey
-     * @param string $supplierKey
+     * @param string|null $supplierKey
      */
-    public function auth(string $apiKey, string $supplierKey = null): void
+    public function auth(string $apiKey, ?string $supplierKey = null): void
     {
         $this->apiKey = $apiKey;
         $this->supplierKey = $supplierKey;
@@ -262,10 +262,10 @@ final class Client
      *
      * @param string $requestEntity
      * @param array $params
-     * @param string $ETag ETag
+     * @param string|bool $ETag ETag
      * @return bool|string Return the result on success, FALSE on failure
      */
-    public function getPureResponse($requestEntity, array $params = [], $ETag = null)
+    public function getPureResponse($requestEntity, array $params = [], ?string $ETag = null)
     {
         $params['format'] = $this->format;
         $params['apikey'] = $this->apiKey;
@@ -304,46 +304,45 @@ final class Client
             }
         }
         $this->_error = null;
-        if (true) {
-            switch ($this->getHttpCode()) {
-                case self::CODE_STATUS_OK:
-                    break;
-                case self::CODE_STATUS_REQUEST_ERROR:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): request error';
-                    break;
-                case self::CODE_STATUS_NOT_MODIFIED:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): not modified';
-                    break;
-                case self::CODE_STATUS_NOT_AUTHORIZED:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): not authorized';
-                    break;
-                case self::CODE_STATUS_NO_ACCESS:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): no access';
-                    break;
-                case self::CODE_STATUS_NO_DATA_FOUND:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): data not found';
-                    $this->prepareResponseObj([], $responseObj);
-                    break;
-                case self::CODE_STATUS_REQUEST_ENTITY_TO_LARGE:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): request entity to large';
-                    break;
-                case self::CODE_STATUS_REQUEST_LIMIT_REACHED:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): request limit reached';
-                    break;
-                case self::CODE_STATUS_INTERNAL_SERVER_ERROR:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): internal server error';
-                    break;
-                case self::CODE_STATUS_METHOD_NOT_FOUND:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): method not found';
-                    break;
-                case self::CODE_STATUS_SERVICE_NOT_AVAILABLE:
-                    $this->_error = 'Error (' . $this->getHttpCode() . '): service not available';
-                    break;
-                default:
-                    $this->_error = 'Error (' . $this->getHttpCode() . ')';
-                    break;
-            }
+        switch ($this->getHttpCode()) {
+            case self::CODE_STATUS_OK:
+                break;
+            case self::CODE_STATUS_REQUEST_ERROR:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): request error';
+                break;
+            case self::CODE_STATUS_NOT_MODIFIED:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): not modified';
+                break;
+            case self::CODE_STATUS_NOT_AUTHORIZED:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): not authorized';
+                break;
+            case self::CODE_STATUS_NO_ACCESS:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): no access';
+                break;
+            case self::CODE_STATUS_NO_DATA_FOUND:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): data not found';
+                $this->prepareResponseObj([], $responseObj);
+                break;
+            case self::CODE_STATUS_REQUEST_ENTITY_TO_LARGE:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): request entity to large';
+                break;
+            case self::CODE_STATUS_REQUEST_LIMIT_REACHED:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): request limit reached';
+                break;
+            case self::CODE_STATUS_INTERNAL_SERVER_ERROR:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): internal server error';
+                break;
+            case self::CODE_STATUS_METHOD_NOT_FOUND:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): method not found';
+                break;
+            case self::CODE_STATUS_SERVICE_NOT_AVAILABLE:
+                $this->_error = 'Error (' . $this->getHttpCode() . '): service not available';
+                break;
+            default:
+                $this->_error = 'Error (' . $this->getHttpCode() . ')';
+                break;
         }
+
         if ($this->_error) {
             throw new \Exception($this->_error, $this->getHttpCode());
         }
@@ -359,7 +358,7 @@ final class Client
      * @return array|bool
      * @throws \Exception
      */
-    public function request(string $requestEntity, string $responseObj, array $params = [], string $ETag = null)
+    public function request(string $requestEntity, string $responseObj, array $params = [], ?string $ETag = null)
     {
         $result = $this->getPureResponse($requestEntity, $params, $ETag);
         return $this->parseResponse($result, $responseObj);
@@ -391,7 +390,7 @@ final class Client
      * @return bool|array
      * @throws \Exception
      */
-    public function getBrands(string $ETag = null)
+    public function getBrands(?string $ETag = null)
     {
         return $this->request(self::REQUEST_ENTITY_BRANDS, ApiResponse::RESPONSE_BRANDS, [], $ETag);
     }
@@ -399,12 +398,12 @@ final class Client
     /**
      * Return list of brands
      *
-     * @param int $partyId
-     * @param string $ETag ETag
+     * @param int|null $partyId
+     * @param string|null $ETag ETag
      * @return bool|array
      * @throws \Exception
      */
-    public function getLocations(int $partyId = null, string $ETag = null)
+    public function getLocations(?int $partyId = null, ?string $ETag = null)
     {
         $params = [];
         if (isset($partyId)) {
@@ -418,11 +417,11 @@ final class Client
     /**
      * Return list of categories
      *
-     * @param string $ETag ETag
+     * @param string|null $ETag ETag
      * @return bool|array
      * @throws \Exception
      */
-    public function getCategories(string $ETag = null)
+    public function getCategories(?string $ETag = null)
     {
         return $this->request(self::REQUEST_ENTITY_CATEGORIES, ApiResponse::RESPONSE_CATEGORIES, [], $ETag);
     }
@@ -430,11 +429,11 @@ final class Client
     /**
      * Return party list by role
      *
-     * @param string $role
+     * @param string|null $role
      * @return bool|array
      * @throws \Exception
      */
-    public function getParties(string $role = null)
+    public function getParties(?string $role = null)
     {
         return $this->request(self::REQUEST_ENTITY_PARTIES, ApiResponse::RESPONSE_PARTIES, ['role' => $role]);
     }
@@ -457,12 +456,12 @@ final class Client
     /**
      * Return list of attributes
      *
-     * @param int $catId category id
-     * @param int $attrType attribute type (const)
+     * @param int|null $catId category id
+     * @param  $attrType attribute type (const)
      * @return bool|array
      * @throws \Exception
      */
-    public function getAttributes(int $catId = null, $attrType = null)
+    public function getAttributes(?int $catId = null, $attrType = null)
     {
         $params = [];
         if (isset($catId)) {
@@ -606,11 +605,11 @@ final class Client
      * Return information about product by id
      *
      * @param int $goodId
-     * @param string $ETag ETag
+     * @param string|bool $ETag ETag
      * @return bool|array
      * @throws \Exception
      */
-    public function getProductById(int $goodId, string $ETag = null)
+    public function getProductById(int $goodId, ?string $ETag = null)
     {
         $params = [
             'good_id' => $goodId
@@ -622,11 +621,11 @@ final class Client
      * Return information about products by GTIN
      *
      * @param string $gtin
-     * @param string $ETag ETag
+     * @param string|null $ETag ETag
      * @return bool|array
      * @throws \Exception
      */
-    public function getProductsByGtin(string $gtin, string $ETag = null)
+    public function getProductsByGtin(string $gtin, ?string $ETag = null)
     {
         $params = [
             'gtin' => $gtin
@@ -639,11 +638,11 @@ final class Client
      *
      * @param string $ltin
      * @param int $partyId
-     * @param string $ETag ETag
+     * @param string|null $ETag ETag
      * @return bool|array
      * @throws \Exception
      */
-    public function getProductsByLtin(string $ltin, int $partyId, string $ETag = null)
+    public function getProductsByLtin(string $ltin, int $partyId, ?string $ETag = null)
     {
         $params = [
             'ltin' => $ltin,
@@ -734,6 +733,7 @@ final class Client
      */
     private function prepareResponseObj($response, $requestedApi)
     {
+        $originalResponse = $response;
         if ($this->format == self::RESPONSE_FORMAT_XML) {
             $response = json_decode(json_encode((array)$response), true);
         }
@@ -742,7 +742,14 @@ final class Client
          */
         $responseObj = new $requestedApi($response['result']);
         $responseObj->setApiVersion($response['apiversion']);
-        $responseObj->setResult($response['result']);
+
+        $result = $response['result'];
+
+/*        if ($this->format == self::RESPONSE_FORMAT_XML) {
+            $result = $originalResponse->xpath('result');
+        }
+        */
+        $responseObj->setResult($result);
         return $responseObj;
     }
 }

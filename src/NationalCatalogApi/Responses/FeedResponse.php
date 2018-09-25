@@ -38,6 +38,7 @@ class FeedResponse extends ApiResponse
             $this->{$key} = $val;
         }
     }
+
     /**
      * Method for reseive feed identifier
      * Contains only feed ID integer
