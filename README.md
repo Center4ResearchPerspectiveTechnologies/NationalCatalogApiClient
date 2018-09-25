@@ -12,10 +12,10 @@ Add these lines to your composer.json
         "url":  "https://github.com/Center4ResearchPerspectiveTechnologies/NationalCatalogApiClient.git"
       }
     ]
-   
-``` 
 
-and run command in your project 
+```
+
+and run command in your project
 
 `composer require Center4ResearchPerspectiveTechnologies/NationalCatalogApiClient master@dev`
 
@@ -53,6 +53,8 @@ $feed->addEntry($entry); //add created entry to feed
 print_r($feed->asJson()); // if you want to check the feed
 
 $result = $api->postFeed($feed);// we can pass $feed or $feed->asJson()
+
+echo $result->getFeedId();
 ```
 
 ## Json
