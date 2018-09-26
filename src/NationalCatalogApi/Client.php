@@ -38,7 +38,6 @@ final class Client
     const VERSION = 'v3';
 
     const RESPONSE_FORMAT_JSON = 'json';
-    const RESPONSE_FORMAT_XML = 'xml';
 
     const REQUEST_ENTITY_ATTRIBUTES = 'attributes';
     const REQUEST_ENTITY_BRANDS = 'brands';
@@ -77,7 +76,7 @@ final class Client
     protected $apiKey;
     protected $supplierKey;
     protected $apiUrl;
-    protected $format;
+    private $format;
     /** @var string */
     private $_error;
     /** @var array */
@@ -125,19 +124,6 @@ final class Client
     {
         $this->apiKey = $apiKey;
         $this->supplierKey = $supplierKey;
-    }
-
-    /**
-     * @param string $format
-     * @throws \Throwable
-     */
-    public function setFormat($format): void
-    {
-        if (in_array($format, [self::RESPONSE_FORMAT_JSON, self::RESPONSE_FORMAT_XML])) {
-            $this->format = $format;
-        } else {
-            throw new \Exception("Format is not supported");
-        }
     }
 
     /**
@@ -217,7 +203,6 @@ final class Client
      */
     private function sendRequest(string $url, $params = [], array $headers = [])
     {
-
         $this->_headers = null;
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -290,19 +275,12 @@ final class Client
      */
     public function parseResponse($result, $responseObj)
     {
-        if ($this->format == self::RESPONSE_FORMAT_JSON) {
-            $response = false !== $result ? json_decode($result, true) : false;
-            if ($response && isset($response['result'])) {
-                return $this->prepareResponseObj($response, $responseObj);
-            }
-        } else {
-            if ($this->format == self::RESPONSE_FORMAT_XML) {
-                $response = \simplexml_load_string($result);
-                if ($response) {
-                    return $this->prepareResponseObj($response, $responseObj);
-                }
-            }
+        $response = false !== $result ? json_decode($result, true) : false;
+        if ($response && isset($response['result'])) {
+            return $this->prepareResponseObj($response, $responseObj);
         }
+
+        //if response is not valid, throw new \Exception
         $this->_error = null;
         switch ($this->getHttpCode()) {
             case self::CODE_STATUS_OK:
@@ -710,7 +688,6 @@ final class Client
     {
         $params['apikey'] = $this->apiKey;
         $params['supplier_key'] = $this->supplierKey;
-        $params['format'] = $this->format;
         $url = $this->getUrl(self::REQUEST_ENTITY_FEED) . '?' . http_build_query($params);
         $body = ($content instanceof Feed) ? $content->asJson() : $content;
 
@@ -733,23 +710,12 @@ final class Client
      */
     private function prepareResponseObj($response, $requestedApi)
     {
-        $originalResponse = $response;
-        if ($this->format == self::RESPONSE_FORMAT_XML) {
-            $response = json_decode(json_encode((array)$response), true);
-        }
         /**
          * @var ApiResponse $responseObj
          */
         $responseObj = new $requestedApi($response['result']);
         $responseObj->setApiVersion($response['apiversion']);
-
-        $result = $response['result'];
-
-/*        if ($this->format == self::RESPONSE_FORMAT_XML) {
-            $result = $originalResponse->xpath('result');
-        }
-        */
-        $responseObj->setResult($result);
+        $responseObj->setResult($response['result']);
         return $responseObj;
     }
 }
