@@ -678,27 +678,41 @@ final class Client
     }
 
     /**
-     * Post feed
+     * Post feed with parameter Feed object
      *
-     * @param mixed $content
+     * @param Feed $feed
      * @return bool|array
      * @throws \Exception
      */
-    public function postFeed($content)
+    public function postFeed(Feed $feed)
+    {
+        return $this->postFeedNative($feed->asJson(), $feed->getPartyId());
+    }
+
+    /**
+     * Post feed with content parameter as json or xml
+     *
+     * @param mixed $content
+     * @param int|null $partyId
+     * @return bool|array
+     * @throws \Exception
+     */
+    public function postFeedNative($content, int $partyId)
     {
         $params['apikey'] = $this->apiKey;
         $params['supplier_key'] = $this->supplierKey;
+        $params['party_id'] = $partyId;
+
         $url = $this->getUrl(self::REQUEST_ENTITY_FEED) . '?' . http_build_query($params);
-        $body = ($content instanceof Feed) ? $content->asJson() : $content;
 
         $contentTypeHeader = 'Content-Type: application/';
 
-        $isXml = @substr($body, 0, 1) == '<';
+        $isXml = @substr($content, 0, 1) == '<';
         $contentTypeHeader .= ($isXml) ? "xml" : "json";
 
         $headers = [$contentTypeHeader];
 
-        $result = $this->sendRequest($url, $body, $headers);
+        $result = $this->sendRequest($url, $content, $headers);
         return $this->parseResponse($result, ApiResponse::RESPONSE_FEED);
     }
 

@@ -27,11 +27,14 @@ $api = new \NationalCatalogApi\Client(LABORATORY_API_KEY, SUPPLIER_API_KEY);
 $api->setUrl('http://api.crpt.my');// can skip, then used default https://апи.национальный-каталог.рф
 
 $feed = new \NationalCatalogApi\Feed();
+$entry->setPartyId(521);
 
 $entry = $feed->newEntry();// returns empty object Entity, not related yet with a feed
 
 $entry->setGoodId(123);
 $entry->setGoodName("Шоколад");
+
+$entry->setLocationId(51621);
 
 $entry->addCategory(78);
 $entry->deleteCategory(90);
@@ -52,7 +55,7 @@ $feed->addEntry($entry); //add created entry to feed
 
 print_r($feed->asJson()); // if you want to check the feed
 
-$result = $api->postFeed($feed);// we can pass $feed or $feed->asJson()
+$result = $api->postFeed($feed);
 
 echo $result->getFeedId();
 ```
@@ -64,6 +67,7 @@ echo $result->getFeedId();
     {
         "good_id": 123,
         "good_name": "Шоколад",
+        "location_id": 51621,
         "categories": [
             {
                 "cat_id": 78

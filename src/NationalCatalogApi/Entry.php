@@ -79,6 +79,14 @@ final class Entry
     }
 
     /**
+     * @param int $id
+     */
+    public function setLocationId(int $locationId)
+    {
+        $this->entry['location_id'] = $locationId;
+    }
+
+    /**
      * @param int $catId
      */
     public function addCategory(int $catId): void

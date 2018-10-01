@@ -27,6 +27,11 @@ final class Feed
      */
     private $entries = [];
 
+    /**
+    * @var int
+    */
+    private $partyId;
+
     /**Returns empty entry
      * @return Entry
      */
@@ -41,6 +46,22 @@ final class Feed
     public function addEntry(Entry $entry)
     {
         $this->entries[] = $entry;
+    }
+
+    /**Add party ID to Feed
+     * @param int $partyId
+     */
+    public function setPartyId(int $partyId)
+    {
+        $this->partyId = $partyId;
+    }
+
+    /**Return party ID
+     * @return int $partyId
+     */
+    public function getPartyId()
+    {
+        return $this->partyId;
     }
 
     /**
