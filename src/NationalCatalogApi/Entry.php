@@ -243,6 +243,14 @@ final class Entry
     }
 
     /**
+     * @param string $NTIN
+     */
+    public function setNTIN(string $NTIN): void
+    {
+        $this->entry['NTIN'] = $NTIN;
+    }
+
+    /**
      * @return array
      */
     public function toArray(): array

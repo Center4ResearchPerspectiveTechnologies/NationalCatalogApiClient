@@ -33,6 +33,7 @@ $entry = $feed->newEntry();// returns empty object Entity, not related yet with 
 
 $entry->setGoodId(123);
 $entry->setGoodName("Шоколад");
+$entry->setNTIN("4602065373085");
 
 $entry->setLocationId(51621);
 
@@ -68,6 +69,7 @@ echo $result->getFeedId();
         "good_id": 123,
         "good_name": "Шоколад",
         "location_id": 51621,
+        "ntin": "4602065373085",
         "categories": [
             {
                 "cat_id": 78
