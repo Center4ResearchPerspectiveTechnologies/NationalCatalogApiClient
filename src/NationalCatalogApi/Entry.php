@@ -247,7 +247,7 @@ final class Entry
      */
     public function setNTIN(string $NTIN): void
     {
-        $this->entry['NTIN'] = $NTIN;
+        $this->entry['ntin'] = $NTIN;
     }
 
     /**
