@@ -22,11 +22,13 @@ namespace NationalCatalogApi;
 
 final class Entry
 {
+    const IDENTIFIER_TYPE_NTIN = "ntin";
     const IDENTIFIER_TYPE_GTIN = "gtin";
     const IDENTIFIER_TYPE_SKU = "sku";
     const IDENTIFIER_TYPE_BARCODE = "barcode";
     const IDENTIFIER_TYPE_LTIN = "ltin";
 
+    const IDENTIFIER_NTIN = 0; 	// national katalog identifier
     const IDENTIFIER_GTIN = 1; 	// global bar-code
     const IDENTIFIER_LTIN = 2;	// local bar-code
     const IDENTIFIER_SKU = 3;	// article
@@ -282,6 +284,7 @@ final class Entry
             case self::IDENTIFIER_LTIN: return self::IDENTIFIER_TYPE_LTIN;
             case self::IDENTIFIER_BARCODE: return self::IDENTIFIER_TYPE_BARCODE;
             case self::IDENTIFIER_GTIN: return self::IDENTIFIER_TYPE_GTIN;
+            case self::IDENTIFIER_NTIN: return self::IDENTIFIER_TYPE_NTIN;
         }
         return false;
     }
