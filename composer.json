@@ -1,6 +1,6 @@
 {
   "name": "Center4ResearchPerspectiveTechnologies/NationalCatalogApiClient",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "license": "Apache-2.0",
   "require": {
     "php": ">=7.1",
