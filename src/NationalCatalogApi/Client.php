@@ -131,7 +131,7 @@ final class Client
      */
     public function setUrl(string $url): void
     {
-        $this->apiUrl = $url;
+        $this->apiUrl = self::idn_to_ascii($url);
     }
 
     /**
