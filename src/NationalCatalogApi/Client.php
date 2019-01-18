@@ -88,11 +88,29 @@ final class Client
      */
     public function __construct(string $apiKey, ?string $supplierKey = null)
     {
-        $this->apiUrl = self::API_URL;
+        $this->apiUrl = self::idn_to_ascii(self::API_URL);
         $this->auth($apiKey, $supplierKey);
         $this->format = self::RESPONSE_FORMAT_JSON;
         $this->_error = null;
         $this->_headers = null;
+    }
+
+
+    /**
+     * Convert cyrillic domain to punycode
+     *
+     * @param string $domain
+     * @return string
+     */
+    public static function idn_to_ascii(string $domain): string
+    {
+        if (defined('INTL_IDNA_VARIANT_UTS46')) {
+            $domain = idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46);
+        } else {
+            $domain = idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_2003);
+        }
+
+        return $domain;
     }
 
     /**
