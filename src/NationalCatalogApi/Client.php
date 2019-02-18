@@ -79,6 +79,8 @@ final class Client
     private $format;
     /** @var string */
     private $_error;
+    /** @var string */
+    private $_lastError;
     /** @var array */
     private $_headers;
 
@@ -88,29 +90,9 @@ final class Client
      */
     public function __construct(string $apiKey, ?string $supplierKey = null)
     {
-        $this->apiUrl = self::idn_to_ascii(self::API_URL);
+        $this->apiUrl = $this->idn_to_ascii(self::API_URL);
         $this->auth($apiKey, $supplierKey);
         $this->format = self::RESPONSE_FORMAT_JSON;
-        $this->_error = null;
-        $this->_headers = null;
-    }
-
-
-    /**
-     * Convert cyrillic domain to punycode
-     *
-     * @param string $domain
-     * @return string
-     */
-    public static function idn_to_ascii(string $domain): string
-    {
-        if (defined('INTL_IDNA_VARIANT_UTS46')) {
-            $domain = idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46);
-        } else {
-            $domain = idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_2003);
-        }
-
-        return $domain;
     }
 
     /**
@@ -131,7 +113,7 @@ final class Client
      */
     public function setUrl(string $url): void
     {
-        $this->apiUrl = self::idn_to_ascii($url);
+        $this->apiUrl = $this->idn_to_ascii($url);
     }
 
     /**
@@ -234,7 +216,7 @@ final class Client
         }
         $response = curl_exec($curl);
         if (false === $response) {
-            $this->_error = 'Error (' . curl_errno($curl) . '): ' . curl_error($curl);
+            $this->_lastError = 'Error (' . curl_errno($curl) . '): ' . curl_error($curl);
         } else {
             $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
             $header = substr($response, 0, $header_size);
@@ -335,7 +317,7 @@ final class Client
                 $this->_error = 'Error (' . $this->getHttpCode() . '): service not available';
                 break;
             default:
-                $this->_error = 'Error (' . $this->getHttpCode() . ')';
+                $this->_error = $this->_lastError ?? 'Error (' . $this->getHttpCode() . ')';
                 break;
         }
 
@@ -749,5 +731,52 @@ final class Client
         $responseObj->setApiVersion($response['apiversion']);
         $responseObj->setResult($response['result']);
         return $responseObj;
+    }
+
+    /**
+     * Convert cyrillic domain to punycode
+     *
+     * @param string $url
+     * @return string
+     */
+    private function idn_to_ascii(string $url): string
+    {
+        if (false === ($parsed_url = parse_url($url))) {
+            $parsed_url['host'] = $url;
+        }
+
+        if (defined('INTL_IDNA_VARIANT_UTS46')) {
+            $parsed_url['host'] = idn_to_ascii($parsed_url['host'], 0, INTL_IDNA_VARIANT_UTS46);
+        } else {
+            $parsed_url['host'] = idn_to_ascii($parsed_url['host'], 0, INTL_IDNA_VARIANT_2003);
+        }
+
+        if (false === $parsed_url['host']) {
+            return $url;
+        }
+
+        return $this->unparse_url($parsed_url);
+    }
+
+    /**
+     * Conversion to string from a parsed url
+     *
+     * @param array $parsed_url
+     *
+     * @return string
+     */
+    private function unparse_url(array $parsed_url): string
+    {
+        $url = isset($parsed_url['scheme']) ? $parsed_url['scheme'].'://' : '';
+        $user = $parsed_url['user'] ?? '';
+        $pass = isset($parsed_url['pass']) ? ':'.$parsed_url['pass'] : '';
+        $url .= ($user || $pass) ? $user.$pass.'@' : '';
+        $url .= $parsed_url['host'] ?? '';
+        $url .= isset($parsed_url['port']) ? ':'.$parsed_url['port'] : '';
+        $url .= $parsed_url['path'] ?? '';
+        $url .= isset($parsed_url['query']) ? '?'.$parsed_url['query'] : '';
+        $url .= isset($parsed_url['fragment']) ? '#'.$parsed_url['fragment'] : '';
+
+        return $url;
     }
 }
