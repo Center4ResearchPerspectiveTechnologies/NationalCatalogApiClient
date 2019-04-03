@@ -253,6 +253,14 @@ final class Entry
     }
 
     /**
+     * @param string $GTIN
+     */
+    public function setGTIN(string $GTIN): void
+    {
+        $this->entry['gtin'] = $GTIN;
+    }
+
+    /**
      * @return array
      */
     public function toArray(): array
